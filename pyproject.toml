@@ -66,6 +66,7 @@ google-search-results = "^2.4.2"
 slack-sdk = "^3.22.0"
 sendgrid = "^6.10.0"
 aiofiles = "^23.2.1"
+boto3 = "^1.28.52"
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.3.3"
