@@ -67,6 +67,9 @@ slack-sdk = "^3.22.0"
 sendgrid = "^6.10.0"
 aiofiles = "^23.2.1"
 boto3 = "^1.28.52"
+sqlalchemy = "^2.0.21"
+pydantic-settings = "^2.0.3"
+werkzeug = "^2.3.7"
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.3.3"
