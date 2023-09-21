@@ -11,16 +11,16 @@ import configparser
 # External Libraries
 from loguru import logger
 
-HASURA_ENDPOINT = os_env.get("HASURA_ENDPOINT")
-HASURA_ADMIN_SECRET = os_env.get('HASURA_ADMIN_SECRET')
+HASURA_GRAPHQL_API_ENDPOINT = os_env.get("HASURA_GRAPHQL_API_ENDPOINT")
+HASURA_GRAPHQL_ADMIN_SECRET = os_env.get('HASURA_GRAPHQL_ADMIN_SECRET')
 
 def track_table(connection_name, table_name):
     logger.info(f"Tracking table '{table_name}' from '{connection_name}'")
     res = requests.post(
-        f"{HASURA_ENDPOINT}",
+        f"{HASURA_GRAPHQL_API_ENDPOINT}",
         headers={
             "Content-Type": "application/json",
-            "x-hasura-admin-secret": HASURA_ADMIN_SECRET,
+            "x-hasura-admin-secret": HASURA_GRAPHQL_ADMIN_SECRET,
         },
         json={
             "type": "pg_track_table",
@@ -42,10 +42,10 @@ def track_table(connection_name, table_name):
 
 def reload_table_metadata(connection_name, table_name):
     res = requests.post(
-        f"{HASURA_ENDPOINT}",
+        f"{HASURA_GRAPHQL_API_ENDPOINT}",
         headers={
             "Content-Type": "application/json",
-            "x-hasura-admin-secret": HASURA_ADMIN_SECRET,
+            "x-hasura-admin-secret": HASURA_GRAPHQL_ADMIN_SECRET,
         },
         json={
             "type": "reload_metadata",
@@ -70,10 +70,10 @@ def reload_table_metadata(connection_name, table_name):
 
 def add_source(connection_name, db_url):
     res = requests.post(
-        f"{HASURA_ENDPOINT}",
+        f"{HASURA_GRAPHQL_API_ENDPOINT}",
         headers={
             "Content-Type": "application/json",
-            "x-hasura-admin-secret": HASURA_ADMIN_SECRET,
+            "x-hasura-admin-secret": HASURA_GRAPHQL_ADMIN_SECRET,
         },
         json={
             "type": "pg_add_source",
@@ -103,10 +103,10 @@ def add_source(connection_name, db_url):
 
 def untrack_table(connection_name, table_name):
     res = requests.post(
-        f"{HASURA_ENDPOINT}",
+        f"{HASURA_GRAPHQL_API_ENDPOINT}",
         headers={
             "Content-Type": "application/json",
-            "x-hasura-admin-secret": HASURA_ADMIN_SECRET,
+            "x-hasura-admin-secret": HASURA_GRAPHQL_ADMIN_SECRET,
         },
         json={
             "type": "pg_untrack_table",
@@ -130,10 +130,10 @@ def untrack_table(connection_name, table_name):
 def give_permission_to_user(connection_name, table_name):
     logger.info(f"Granting permission to user on table '{table_name}' from '{connection_name}'")
     res = requests.post(
-        f"{HASURA_ENDPOINT}",
+        f"{HASURA_GRAPHQL_API_ENDPOINT}",
         headers={
             "Content-Type": "application/json",
-            "x-hasura-admin-secret": HASURA_ADMIN_SECRET,
+            "x-hasura-admin-secret": HASURA_GRAPHQL_ADMIN_SECRET,
         },
         json={
             "type": "pg_create_select_permission",

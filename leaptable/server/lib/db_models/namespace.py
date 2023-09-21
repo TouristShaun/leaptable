@@ -53,6 +53,7 @@ class Namespace(BaseModel):
     data_db_params: Optional[ParsedDict] = {}
     redis_params: Optional[Dict[str, str]] = {}
     redis_conn: Optional[Database] = None
+    hasura_params: Optional[ParsedDict] = {}
 
 
 class Job(BaseModel):

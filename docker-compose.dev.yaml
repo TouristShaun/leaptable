@@ -33,7 +33,7 @@ services:
     image: postgres
     restart: always
     env_file:
-      - .env.local
+      - .env.dev
     ports:
       - 45432:5432
     environment:
@@ -57,7 +57,7 @@ services:
     image: hasura/graphql-engine:v2.30.0
     restart: always
     env_file:
-      - .env.local
+      - .env.dev
     environment:
       # postgres database to store Hasura metadata
       HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:postgres@postgres:5432/$HASURA_GRAPHQL_DB_NAME
@@ -78,7 +78,7 @@ services:
       restart: always
       command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0", "--reload"]
       env_file:
-        - .env.local
+        - .env.dev
       ports:
         - 43000:8000
       depends_on:
@@ -91,7 +91,7 @@ services:
     image: ubuntu
     command: bash /02-init-workspace.sh
     env_file:
-      - .env.local
+      - .env.dev
     volumes:
         - ./docker/02-init-workspace.sh:/02-init-workspace.sh
     depends_on:
@@ -108,7 +108,7 @@ services:
 #      REDIS_STREAM_HOST: "redis"
 #      REDIS_CACHE_HOST: "redis"
 #    env_file:
-#      - .env.local
+#      - .env.dev
 
 #  studio:
 #    image: leaptable/studio:latest
@@ -117,7 +117,7 @@ services:
 #      - postgres
 #      - hasura
 #    env_file:
-#      - .env.local
+#      - .env.dev
 #    ports:
 #      - 43001:3000
 #
@@ -132,7 +132,7 @@ services:
 #      REDIS_STREAM_HOST: "redis"
 #      REDIS_CACHE_HOST: "redis"
 #    env_file:
-#      - .env.local
+#      - .env.dev
 #
 #  agent-serpapi:
 #    image: leaptable/engine:latest
@@ -145,7 +145,7 @@ services:
 #      REDIS_STREAM_HOST: "redis"
 #      REDIS_CACHE_HOST: "redis"
 #    env_file:
-#      - .env.local
+#      - .env.dev
 #
 #  tool-browser:
 #    image: leaptable/engine:latest
@@ -158,7 +158,7 @@ services:
 #      REDIS_STREAM_HOST: "redis"
 #      REDIS_CACHE_HOST: "redis"
 #    env_file:
-#      - .env.local
+#      - .env.dev
 #    deploy:
 #      mode: replicated
 #      replicas: 3
@@ -174,7 +174,7 @@ services:
 #      REDIS_STREAM_HOST: "redis"
 #      REDIS_CACHE_HOST: "redis"
 #    env_file:
-#      - .env.local
+#      - .env.dev
 #    deploy:
 #      mode: replicated
 #      replicas: 3

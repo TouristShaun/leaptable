@@ -22,6 +22,7 @@ token_auth_scheme = HTTPBearer()
 api_key_header = APIKeyHeader(name="X-API-KEY")
 async def get_api_key(request: Request, api_key_header: str = Security(api_key_header)) -> str:
 
+    print(api_key_header)
     # Check the API key
     db_api_key = await request.app.state.meta_db.fetch_one(
         """SELECT * FROM API_KEY WHERE key = %(key)s""",

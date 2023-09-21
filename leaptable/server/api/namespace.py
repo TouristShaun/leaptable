@@ -18,7 +18,7 @@ from fastapi.encoders import jsonable_encoder
 from slugify import slugify
 from uuid6 import uuid7
 
-from leaptable.server.lib import sql_text
+from leaptable.server.lib import sql_text, hasura
 from leaptable.server.lib.api_key import generate_api_key
 from leaptable.server.lib.db_connection import Database
 from leaptable.server.lib.db_models.namespace import Namespace
@@ -62,6 +62,14 @@ async def create_namespace(request: Request, namespace: Namespace):
             "port": os_env.get("LEAPTABLE_DATA_DB_PORT")
         }
 
+        namespace.hasura_params = {
+            "data_db": data_db_name,
+            "trace_db": trace_db_name
+        }
+
+        # TODO: These commands always create a database in the existing metadata DB host. Refactor
+        # to enable to them use separate datadb and tracedb hosts.
+
         # Create the data database and grant privileges to the leaptable user.
         await request.app.state.meta_db.execute(
             "CREATE DATABASE {db_name}".format(db_name=data_db_name)
@@ -70,6 +78,8 @@ async def create_namespace(request: Request, namespace: Namespace):
         await request.app.state.meta_db.execute(
             "GRANT ALL PRIVILEGES ON DATABASE {db_name} TO leaptable".format(db_name=data_db_name)
         )
+        logger.info(f"Created Data database {data_db_name} for workspace {namespace.slug}")
+
         logger.info(f"Created Data database {data_db_name} for workspace {namespace.slug}")
 
         # Create the trace database and grant privileges to the leaptable user.
@@ -88,11 +98,13 @@ async def create_namespace(request: Request, namespace: Namespace):
             await namespace.data_db.connect()
             request.app.state.data_db[str(namespace.id_)] = namespace.data_db
             logger.info("Connected to namespace data_db")
+            await namespace.data_db.execute("CREATE EXTENSION IF NOT EXISTS moddatetime")
 
             namespace.trace_db = Database(**namespace.trace_db_params)
             await namespace.trace_db.connect()
             request.app.state.trace_db[str(namespace.id_)] = namespace.trace_db
             logger.info("Connected to namespace trace_db")
+            await namespace.trace_db.execute("CREATE EXTENSION IF NOT EXISTS moddatetime")
         except Exception as e:
             logger.error(f"Error connecting to data database: {e}")
             raise HTTPException(
@@ -142,6 +154,20 @@ async def create_namespace(request: Request, namespace: Namespace):
             await namespace.trace_db.execute(table_sql.format(table_name=table_name))
             logger.info(f"Created new table: {table_name}")
 
+        # Track the databases on Hasura.
+        hasura_connections = {
+            data_db_name: namespace.data_db.to_url_str(),
+            trace_db_name: namespace.trace_db.to_url_str()
+        }
+
+        for connection_name, connection_url in hasura_connections.items():
+            try:
+                print(connection_name, connection_url)
+                hasura.add_source(connection_name, connection_url)
+            except Exception as e:
+                logger.error(f"Error adding source {connection_name} to Hasura: {e}")
+
+
         logger.info(f"Done initializing namespace: {pformat({k : namespace.dict()[k] for k in ['id_', 'name', 'slug']})}")
 
         return {"success": True, "data": {k : namespace.dict()[k] for k in ['id_', 'name', 'slug', 'api_key']}}
@@ -150,74 +176,4 @@ async def create_namespace(request: Request, namespace: Namespace):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),
-        )
-
-
-
-
-@router.get("/namespace/", name="List all namespaces", description="List all namespaces")
-async def list_agents():
-    """Agents endpoint"""
-    decoded = decodeJWT(token)
-    agents = prisma.agent.find_many(
-        where={"userId": decoded["userId"]},
-        include={
-            "user": True,
-        },
-        order={"createdAt": "desc"},
-    )
-
-    if agents:
-        return {"success": True, "data": agents}
-
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="No agents found",
-    )
-
-
-@router.get("/namespace/{namespace_id}/", name="Get namespace", description="Get a specific namespace")
-async def read_namespace(namespace_id: str):
-    """Agent detail endpoint"""
-    agent = prisma.agent.find_unique(where={"id": namespace_id}, include={"prompt": True})
-
-    if agent:
-        return {"success": True, "data": agent}
-
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail=f"Agent with id: {namespace_id} not found",
-    )
-
-
-@router.delete(
-    "/namespace/{namespace_id}/", name="Delete namespace", description="Delete a specific namespace"
-)
-async def delete_agent(namespace_id: str):
-    """Delete agent endpoint"""
-    try:
-        prisma.agentmemory.delete_many(where={"namespace_id": namespace_id})
-        prisma.agent.delete(where={"id": namespace_id})
-
-        return {"success": True, "data": None}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=e,
-        )
-
-
-@router.patch(
-    "/agent/{namespace_id}/", name="Patch namespace", description="Patch a specific namespace"
-)
-async def patch_namespace(namespace_id: str, body: dict):
-    """Patch agent endpoint"""
-    try:
-        prisma.agent.update(data=body, where={"id": namespace_id})
-
-        return {"success": True, "data": None}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=e,
         )

@@ -1,21 +1,42 @@
--- WORKSPACE
-CREATE TABLE IF NOT EXISTS workspace
+-- Namespace
+CREATE TABLE IF NOT EXISTS namespace
 (
-    _id                 uuid             default gen_random_uuid() not null
-        constraint workspace_pk
+    _id             uuid                     default gen_random_uuid() not null
+        constraint namespace_pk
             primary key,
-    _cr                 timestamp        default now(),
-    _up                 timestamp        default now(),
-    name                varchar(64)                                not null,
-    slug                varchar(64)                                not null,
-    data_db_params      jsonb,
-    framework_api_key   varchar(100)                               not null,
-    trace_db_params     jsonb,
+    _cr             timestamp with time zone default now()             not null,
+    _up             timestamp with time zone default now()             not null,
+    slug            varchar(100)                                       not null
+        unique,
+    trace_db_params jsonb                    default '{}'::jsonb       not null,
+    name            varchar(100)                                       not null,
+    data_db_params  jsonb                    default '{}'::jsonb       not null,
     hasura_params       jsonb            default '{}'::jsonb
 );
 
-create unique index workspace_slug_uindex
-    on workspace (slug);
+create unique index namespace__id_uindex
+    on namespace (_id);
+
+-- API Keys
+CREATE TABLE IF NOT EXISTS api_key
+(
+    _id          uuid                     default gen_random_uuid() not null
+        constraint api_key_pk
+            primary key,
+    _cr          timestamp with time zone default now()             not null,
+    _up          timestamp with time zone default now()             not null,
+    key          varchar(250)                                       not null,
+    active       boolean                  default true              not null,
+    namespace_id uuid                                               not null
+        constraint api_key_namespace__id_fk
+            references namespace
+            on delete cascade,
+    usage_count  bigint                   default 0                 not null,
+    name         varchar(100)                                       not null
+);
+
+create unique index api_key__id_uindex
+    on api_key (_id);
 
 -- DATAFRAME
 CREATE TABLE IF NOT EXISTS dataframe
@@ -28,9 +49,9 @@ CREATE TABLE IF NOT EXISTS dataframe
     name            varchar(64)                                                not null,
     slug            varchar(64)                                                not null,
     meta            jsonb                    default '{}'::jsonb,
-    workspace_id    uuid                                                       not null
-        constraint dataframe_workspace__id_fk
-            references workspace
+    namespace_id    uuid                                                       not null
+        constraint dataframe_namespace__id_fk
+            references namespace
             on delete cascade,
     _blueprint      jsonb                    default '{}'::jsonb,
     bp_version      varchar(10)              default 'v0.1'::character varying not null,
@@ -91,44 +112,3 @@ CREATE TABLE IF NOT EXISTS "user"
 
 create unique index user__id_uindex
     on "user" (_id);
-
--- Namespace
-CREATE TABLE IF NOT EXISTS namespace
-(
-    _id             uuid                     default gen_random_uuid() not null
-        constraint namespace_pk
-            primary key,
-    _cr             timestamp with time zone default now()             not null,
-    _up             timestamp with time zone default now()             not null,
-    slug            varchar(100)                                       not null
-        unique,
-    trace_db_params jsonb                    default '{}'::jsonb       not null,
-    name            varchar(100)                                       not null,
-    data_db_params  jsonb                    default '{}'::jsonb       not null
-);
-
-create unique index namespace__id_uindex
-    on namespace (_id);
-
--- API Keys
-CREATE TABLE IF NOT EXISTS api_key
-(
-    _id          uuid                     default gen_random_uuid() not null
-        constraint api_key_pk
-            primary key,
-    _cr          timestamp with time zone default now()             not null,
-    _up          timestamp with time zone default now()             not null,
-    key          varchar(250)                                       not null,
-    active       boolean                  default true              not null,
-    namespace_id uuid                                               not null
-        constraint api_key_namespace__id_fk
-            references namespace
-            on delete cascade,
-    usage_count  bigint                   default 0                 not null,
-    name         varchar(100)                                       not null
-);
-
-create unique index api_key__id_uindex
-    on api_key (_id);
-
-
