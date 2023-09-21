@@ -14,7 +14,6 @@ from enum import Enum, IntEnum
 from pydantic.functional_validators import BeforeValidator
 
 # Internal Libraries
-from reframe_api.server.lib.db_connection import Database
 
 from pydantic.types import UUID, Json
 from uuid6 import uuid7

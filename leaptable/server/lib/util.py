@@ -10,14 +10,14 @@ import configparser
 
 # External Libraries
 from loguru import logger
-from reframe_api.server.lib.db_models.user import User
+from leaptable.server.lib.db_models.user import User
 from slack_sdk.errors import SlackApiError
 from slack_sdk import WebClient
 import sendgrid
 from pprint import pprint, pformat
 
 # Internal Libraries
-from reframe_api.server.lib.db_models.dataframe import Blueprint, DISPLAY_FORMAT_TYPE, DATA_TYPE
+from leaptable.server.lib.db_models.dataframe import Blueprint, DISPLAY_FORMAT_TYPE, DATA_TYPE
 
 
 # Global Variables
