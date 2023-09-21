@@ -70,6 +70,7 @@ boto3 = "^1.28.52"
 sqlalchemy = "^2.0.21"
 pydantic-settings = "^2.0.3"
 werkzeug = "^2.3.7"
+python-multipart = "^0.0.6"
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.3.3"
