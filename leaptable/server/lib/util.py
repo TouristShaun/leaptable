@@ -7,6 +7,7 @@ __copyright__ = "Copyright © 2023 Leaptable, Inc."
 from pathlib import Path
 from random import sample
 import configparser
+from os import environ as os_env
 
 # External Libraries
 from loguru import logger
@@ -21,16 +22,8 @@ from leaptable.server.lib.db_models.dataframe import Blueprint, DISPLAY_FORMAT_T
 
 
 # Global Variables
-config = configparser.ConfigParser()
-config_path = config.read(Path.home() / ".reframe/config.ini")
-print(config_path)
-
-assert config_path and len(config_path), "Failed to load .env file"
-
-_config = config["PRODUCTION"]
-SLACK_BOT_TOKEN = _config.get("SLACK_BOT_TOKEN")
-SENDGRID_API_KEY = _config.get("SENDGRID_API_KEY")
-print(SENDGRID_API_KEY)
+SLACK_BOT_TOKEN = os_env.get("SLACK_BOT_TOKEN")
+SENDGRID_API_KEY = os_env.get("SENDGRID_API_KEY")
 slack_client = WebClient(token=SLACK_BOT_TOKEN)
 
 bp_template = {
