@@ -84,6 +84,8 @@ services:
       depends_on:
       - postgres
       - hasura
+      volumes:
+        - ./:/leaptable
 
   init-workspace:
     image: ubuntu
