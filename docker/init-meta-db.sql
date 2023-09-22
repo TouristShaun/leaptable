@@ -17,6 +17,48 @@ CREATE TABLE IF NOT EXISTS namespace
 create unique index namespace__id_uindex
     on namespace (_id);
 
+-- USER
+CREATE TABLE IF NOT EXISTS "user"
+(
+    _id                 uuid                     default gen_random_uuid() not null
+        constraint user_pk
+            primary key,
+    _cr                 timestamp with time zone default now()             not null,
+    _up                 timestamp with time zone default now()             not null,
+    email               varchar(100)                                       not null,
+    name                varchar(100)                                       not null,
+    picture             varchar(200)                                       not null,
+    email_verified      boolean                  default false             not null,
+    last_seen           timestamp with time zone
+);
+
+create unique index user__id_uindex
+    on "user" (_id);
+
+-- NAMESPACE_MEMBERSHIP
+create table namespace_membership
+(
+    _id          uuid        default gen_random_uuid()           not null
+        constraint namespace_membership_pk
+            primary key,
+    _cr          timestamp   default now(),
+    _up          timestamp   default now(),
+    namespace_id uuid                                            not null
+        constraint namespace_membership_namespace__id_fk
+            references namespace
+            on delete cascade,
+    user_id      uuid                                            not null
+        constraint namespace_membership_user__id_fk
+            references "user"
+            on delete cascade,
+    role         varchar(16) default 'MEMBER'::character varying not null
+);
+
+create unique index namespace_membership_user_namespace_idx
+    on namespace_membership (user_id, namespace_id);
+
+
+
 -- API Keys
 CREATE TABLE IF NOT EXISTS api_key
 (
@@ -48,12 +90,10 @@ CREATE TABLE IF NOT EXISTS dataframe
     _up             timestamp                default now()                     not null,
     name            varchar(64)                                                not null,
     slug            varchar(64)                                                not null,
-    meta            jsonb                    default '{}'::jsonb,
     namespace_id    uuid                                                       not null
         constraint dataframe_namespace__id_fk
             references namespace
             on delete cascade,
-    _blueprint      jsonb                    default '{}'::jsonb,
     bp_version      varchar(10)              default 'v0.1'::character varying not null,
     table_name      text,
     icon            varchar(20)              default '📘'::character varying
@@ -95,20 +135,65 @@ create unique index blueprint__id_uindex
 create unique index blueprint__dataframe_id_slug_uindex
     on blueprint (dataframe_id, slug);
 
--- auto-generated definition
-CREATE TABLE IF NOT EXISTS "user"
+-- APP STATE
+create table app_state
 (
-    _id                 uuid                     default gen_random_uuid() not null
-        constraint user_pk
-            primary key,
-    _cr                 timestamp with time zone default now()             not null,
-    _up                 timestamp with time zone default now()             not null,
-    email               varchar(100)                                       not null,
-    name                varchar(100)                                       not null,
-    picture             varchar(200)                                       not null,
-    email_verified      boolean                  default false             not null,
-    last_seen           timestamp with time zone
+    meta       jsonb                    default '{}'::jsonb       not null,
+    user_id    uuid                                               not null,
+    session_id varchar(64)                                        not null,
+    _id        uuid                     default gen_random_uuid() not null,
+    _cr        timestamp with time zone default now()             not null,
+    _up        timestamp with time zone default now()             not null
 );
 
-create unique index user__id_uindex
-    on "user" (_id);
+create unique index app_state__id_uindex
+    on app_state (_id);
+
+-- INVITE
+create table invite
+(
+    _id           uuid                     default gen_random_uuid() not null
+        constraint invite_pk
+            primary key,
+    _cr           timestamp with time zone default now()             not null,
+    _up           timestamp with time zone default now()             not null,
+    email         varchar(100)                                       not null,
+    num_reminders integer                  default 0                 not null,
+    accepted      boolean                  default false             not null,
+    last_reminder timestamp with time zone,
+    namespace_id  uuid                                               not null
+        constraint invite_namespace__id_fk
+            references namespace
+            on delete cascade,
+    inviter       uuid                                               not null
+        constraint invite_user__id_fk
+            references "user"
+            on delete cascade,
+    promo_name    varchar(50)
+);
+
+create unique index invitate__id_uindex
+    on invite (_id);
+
+-- HISTORY
+create table history
+(
+    _id            uuid                     default gen_random_uuid()             not null
+        constraint history_pk
+            primary key,
+    _cr            timestamp with time zone default now()                         not null,
+    _up            timestamp with time zone default now()                         not null,
+    type           varchar                  default 50                            not null,
+    initiator_id   uuid                                                           not null,
+    dataframe_id   varchar(100),
+    item           jsonb                    default '{}'::jsonb                   not null,
+    initiator_type varchar(15)              default 'user-web'::character varying not null,
+    namespace_id   uuid                                                           not null,
+    version        varchar(20)              default 'v0.01'::character varying,
+    job_id         uuid
+);
+
+create unique index queries_id_uindex
+    on history (_id);
+
+

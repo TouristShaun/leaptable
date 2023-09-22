@@ -114,8 +114,8 @@ async def create_namespace(request: Request, namespace: Namespace):
 
         await request.app.state.meta_db.execute(
             """ 
-            INSERT INTO namespace (_id, slug, name, data_db_params, trace_db_params)
-            VALUES (%(id_)s, %(slug)s, %(name)s, %(data_db_params)s, %(trace_db_params)s)
+            INSERT INTO namespace (_id, slug, name, data_db_params, trace_db_params, hasura_params)
+            VALUES (%(id_)s, %(slug)s, %(name)s, %(data_db_params)s, %(trace_db_params)s, %(hasura_params)s)
             RETURNING _id, slug, name
             """, namespace.dict())
 

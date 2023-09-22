@@ -71,6 +71,7 @@ sqlalchemy = "^2.0.21"
 pydantic-settings = "^2.0.3"
 werkzeug = "^2.3.7"
 python-multipart = "^0.0.6"
+psycopg2-binary = "^2.9.7"
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.3.3"
