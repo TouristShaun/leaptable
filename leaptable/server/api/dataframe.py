@@ -6,10 +6,10 @@ __copyright__ = "Copyright © 2023 Leaptable, Inc."
 # Standard Libraries
 from typing import Annotated
 from pathlib import Path
-
-# External Libraries
 import os
 from os import environ as os_env
+
+# External Libraries
 import aiofiles
 import boto3
 import pandas as pd
@@ -224,4 +224,4 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
     res = hasura.track_table(connection_name=hasura_datadb, table_name=table_name)
     res = hasura.give_permission_to_user(connection_name=hasura_datadb, table_name=table_name)
 
-    return {"status": "success", "message": "Dataframe uploaded successfully"}
+    return {"status": "success", "message": "Dataframe uploaded successfully", "dataframe_id": dataframe_id}

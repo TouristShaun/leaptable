@@ -36,14 +36,13 @@ class User(BaseModel):
     id_: UUID = Field(alias="_id", default_factory=uuid7)
     cr_: datetime = Field(alias="_cr", default_factory=datetime.utcnow)
     up_: datetime = Field(alias="_up", default_factory=datetime.utcnow)
-    auth0_id: str
     email: str
     name: str
     preferred_name: str | None = None
     nickname: str | None = None
     beta_access: bool = False
     email_verified: bool = False
-    picture: str
+    picture: str | None = None
     app_metadata: ParsedDict | None = {}
     user_metadata: ParsedDict | None = {}
 

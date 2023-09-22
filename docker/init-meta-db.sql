@@ -35,6 +35,9 @@ CREATE TABLE IF NOT EXISTS "user"
 create unique index user__id_uindex
     on "user" (_id);
 
+create unique index user_email_uindex
+    on "user" (email);
+
 -- NAMESPACE_MEMBERSHIP
 create table namespace_membership
 (

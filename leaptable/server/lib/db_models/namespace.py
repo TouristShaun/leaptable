@@ -55,6 +55,12 @@ class Namespace(BaseModel):
     redis_conn: Optional[Database] = None
     hasura_params: Optional[ParsedDict] = {}
 
+class NamespaceMembership(BaseModel):
+    id_: UUID = Field(alias="_id", default_factory=uuid7)
+    cr_: datetime = Field(alias="_cr", default_factory=datetime.utcnow)
+    up_: datetime = Field(alias="_up", default_factory=datetime.utcnow)
+    namespace_id: UUID
+    user_id: UUID
 
 class Job(BaseModel):
     id_: UUID = Field(alias="_id", default_factory=uuid7)

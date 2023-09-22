@@ -200,6 +200,25 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_create_object_relationship",
     "args": {
+        "table": "user",
+        "name": "namespace_membership",
+        "source": "Leaptable | Meta",
+        "using": {
+            "foreign_key_constraint_on" : {
+                "table" : "namespace_membership",
+                "columns" : ["user_id"]
+            }
+        }
+    }
+}'
+
+echo
+curl --location 'http://hasura:8080/v1/metadata' \
+--header 'x-hasura-admin-secret: leaptable' \
+--header 'Content-Type: application/json' \
+--data '{
+    "type" : "pg_create_object_relationship",
+    "args": {
         "table": "dataframe",
         "name": "namespace",
         "source": "Leaptable | Meta",
@@ -214,7 +233,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --header 'x-hasura-admin-secret: leaptable' \
 --header 'Content-Type: application/json' \
 --data '{
-    "type" : "pg_create_object_relationship",
+    "type" : "pg_create_array_relationship",
     "args": {
         "table": "dataframe",
         "name": "blueprint_list",

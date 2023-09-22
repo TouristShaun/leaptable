@@ -8,11 +8,9 @@ import json
 from os import environ as os_env
 
 # External Libraries
-from fastapi import APIRouter, Request, Depends, HTTPException, status
+from fastapi import APIRouter, Request, HTTPException, status
 from loguru import logger
 from pprint import pformat, pprint
-from psycopg import sql
-from fastapi.encoders import jsonable_encoder
 
 # Internal Libraries
 from slugify import slugify
