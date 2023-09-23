@@ -10,6 +10,7 @@ from typing import Annotated
 import uuid
 
 import requests
+from leaptable.server.api.agents import single_action_chat_agent
 from loguru import logger
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, Body, UploadFile, status
 from pprint import pprint, pformat
@@ -85,7 +86,7 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
     dataframe = Dataframe(**db_dataframe)
 
     # Add new output columns to the database
-    await workspace.data_db.execute(
+    await namespace.data_db.execute(
         f"""
         ALTER TABLE {dataframe.table_name} ADD COLUMN IF NOT EXISTS {output_column_slug} jsonb default '{{}}'::jsonb;
         """
@@ -108,10 +109,10 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
         """
     logger.debug(f"SQL Query: {sql_text_query}")
 
+    print(request.headers)
 
-    res = requests.post(
-        "http://100.101.28.98:8000/api/v1/agent/prompt/single_action_chat_agent/",
-        json={
+    res = await single_action_chat_agent(request,
+        {
             'input_column': input_column,
             'prompt_text': prompt_text,
             'sql_query_text': sql_text_query,
@@ -119,18 +120,32 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
             'table': dataframe.table_name,
             'initiator_id': initiator_id,
             'initiator_type': 'user-web',
-        },
-        headers={"X-API-KEY": workspace.framework_api_key}
-    )
+        }, namespace)
 
-    if res.status_code != 200:
-        raise HTTPException(status_code=res.status_code, detail=res.json())
 
-    r_json = res.json()
-    job_id = r_json['data']['id_']
+    # res = requests.post(
+    #     "http://api:8000/api/v1/agexnt/prompt/single_action_chat_agent/",
+    #     json={
+    #         # 'input_column': input_column,
+    #         # 'prompt_text': prompt_text,
+    #         # 'sql_query_text': sql_text_query,
+    #         # 'output_column': output_column_slug,
+    #         # 'table': dataframe.table_name,
+    #         # 'initiator_id': initiator_id,
+    #         # 'initiator_type': 'user-web',
+    #     },
+    #     headers={
+    #         "X-API-KEY": request.headers['x-api-key'],
+    #         "authorization": request.headers['authorization']
+    #     }
+    # )
+
+    print(res)
+
+    job_id = res['data']['id_']
 
     # Get the blueprint for the dataframe.
-    db_blueprint = await request.app.state.admin_db.fetch_list(
+    db_blueprint = await request.app.state.meta_db.fetch_list(
         "SELECT * FROM blueprint WHERE dataframe_id = (%(dataframe_id)s)", {'dataframe_id': dataframe_id}
     )
     bp_list = [Blueprint(**bp) for bp in db_blueprint]
@@ -151,7 +166,7 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
         )
 
 
-        await request.app.state.admin_db.execute(
+        await request.app.state.meta_db.execute(
             f"""
             INSERT INTO blueprint (_id, display_name, slug, display_format, dataframe_id, ai_gen, system, type)
             VALUES (%(id_)s, %(display_name)s, %(slug)s, %(display_format)s, %(dataframe_id)s, %(ai_gen)s, %(system)s, %(type)s)
@@ -163,7 +178,7 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
         "item": {'prompt' : prompt},
         "version": "v1.01",
         "dataframe_id": dataframe_id,
-        "workspace_id": workspace_id,
+        "namespace_id": namespace.id_,
         "initiator_id": initiator_id,
         "job_id": job_id,
         "initiator_type": "user-web",
@@ -171,15 +186,15 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
     })
 
     # Write the history item
-    await request.app.state.admin_db.execute(
+    await request.app.state.meta_db.execute(
         """
-        INSERT INTO history (_id, item, version, dataframe_id, workspace_id, initiator_id, job_id, initiator_type, type)
-        VALUES (%(id_)s, %(item)s, %(version)s, %(dataframe_id)s, %(workspace_id)s, %(initiator_id)s, %(job_id)s, %(initiator_type)s, %(type)s);
+        INSERT INTO history (_id, item, version, dataframe_id, namespace_id, initiator_id, job_id, initiator_type, type)
+        VALUES (%(id_)s, %(item)s, %(version)s, %(dataframe_id)s, %(namespace_id)s, %(initiator_id)s, %(job_id)s, %(initiator_type)s, %(type)s);
         """, hist.dict()
     )
 
     # Reload the table metadata on Hasura
-    res = hasura.reload_table_metadata(connection_name=workspace.hasura_params['data_db'], table_name=dataframe.table_name)
+    res = hasura.reload_table_metadata(connection_name=namespace.hasura_params['data_db'], table_name=dataframe.table_name)
 
 
     return {"status": "success", "message": "Dataframe uploaded successfully"}

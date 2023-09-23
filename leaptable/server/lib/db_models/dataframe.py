@@ -70,14 +70,14 @@ class Blueprint(BaseModel):
 
 class Dataframe(BaseModel):
     id_: UUID = Field(alias="_id", default_factory=uuid7)
-    workspace_id: UUID
+    namespace_id: UUID
     slug : str
     name : str
     table_name : str
 
 class HistoryItem(BaseModel):
     id_: UUID = Field(alias="_id", default_factory=uuid7)
-    workspace_id: UUID
+    namespace_id: UUID
     initiator_id: UUID
     dataframe_id: UUID
     job_id: UUID
