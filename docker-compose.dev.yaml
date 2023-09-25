@@ -85,7 +85,7 @@ services:
         - ./:/leaptable
 
   init-workspace:
-    image: ubuntu
+    image: leaptable/init
     command: bash /02-init-workspace.sh & tail -F maana
     env_file:
       - .env.dev

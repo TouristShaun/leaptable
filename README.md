@@ -21,7 +21,7 @@ By far the easiest way to install the LeapTable server is to use docker.
 
 ```sql
 wget https://git.leaptable.co/docker-compose.yaml
-docker compose -p leaptable -d
+docker compose -p leaptable up -d
 ```
 
 Discord: https://discord.gg/KkFzHRTF5K

@@ -30,7 +30,7 @@ services:
     image: postgres
     restart: always
     env_file:
-      - .env.example
+      - .env.local
     ports:
       - 45432:5432
     environment:
@@ -54,7 +54,7 @@ services:
     image: hasura/graphql-engine:v2.30.0
     restart: always
     env_file:
-      - .env.example
+      - .env.local
     environment:
       # postgres database to store Hasura metadata
       HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:postgres@postgres:5432/$HASURA_GRAPHQL_DB_NAME
@@ -73,22 +73,20 @@ services:
   api:
       image: leaptable/api:latest
       restart: always
-      command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0", "--reload"]
+      command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0"]
       env_file:
-        - .env.example
+        - .env.local
       ports:
         - 43000:8000
       depends_on:
       - postgres
       - hasura
-      volumes:
-        - ./:/leaptable
 
   init-workspace:
     image: ubuntu
-    command: bash /02-init-workspace.sh & tail -F maana
+    command: bash /02-init-workspace.sh
     env_file:
-      - .env.example
+      - .env.local
     volumes:
         - ./docker/02-init-workspace.sh:/02-init-workspace.sh
     depends_on:
@@ -101,7 +99,7 @@ services:
       - postgres
       - hasura
     env_file:
-      - .env.example
+      - .env.local
     ports:
       - 43001:3000
 
@@ -113,7 +111,7 @@ services:
       - redis
       - postgres
     env_file:
-      - .env.example
+      - .env.local
 
   agent-serpapi:
     image: leaptable/engine:latest
@@ -123,7 +121,7 @@ services:
       - redis
       - postgres
     env_file:
-      - .env.example
+      - .env.local
 
   tool-browser:
     image: leaptable/engine:latest
@@ -133,7 +131,7 @@ services:
       - redis
       - postgres
     env_file:
-      - .env.example
+      - .env.local
     deploy:
       mode: replicated
       replicas: 3
@@ -146,7 +144,7 @@ services:
       - redis
       - postgres
     env_file:
-      - .env.example
+      - .env.local
     deploy:
       mode: replicated
       replicas: 3
