@@ -43,8 +43,8 @@ services:
       retries: 10
     volumes:
       - leap-data-postgresql:/var/lib/postgresql/data
-      - ./docker/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
-      - ./docker/init-meta-db.sql:/scripts/init-meta-db.sql
+      - ./01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
+      - ./init-meta-db.sql:/scripts/init-meta-db.sql
 
   redis:
     image: redis
@@ -71,7 +71,7 @@ services:
       - 48080:8080
 
   api:
-      image: leaptable/api:latest
+      image: leaptable/api:v0.0.1
       restart: always
       command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0"]
       env_file:
@@ -93,7 +93,7 @@ services:
       - api
 
   app:
-    image: leaptable/app:latest
+    image: leaptable/app:v0.0.1
     restart: always
     depends_on:
       - postgres
@@ -104,7 +104,7 @@ services:
       - 43001:3000
 
   agent-browser:
-    image: leaptable/engine:latest
+    image: leaptable/engine:v0.0.1
     restart: always
     command: [ "python", "leaptable/agents/browser/main.py" ]
     depends_on:
@@ -114,7 +114,7 @@ services:
       - .env.local
 
   agent-serpapi:
-    image: leaptable/engine:latest
+    image: leaptable/engine:v0.0.1
     restart: always
     command: [ "python", "leaptable/agents/serp/main.py" ]
     depends_on:
@@ -124,7 +124,7 @@ services:
       - .env.local
 
   tool-browser:
-    image: leaptable/engine:latest
+    image: leaptable/engine:v0.0.1
     restart: always
     command: [ "python", "leaptable/tools/browser/main.py" ]
     depends_on:
@@ -137,7 +137,7 @@ services:
       replicas: 3
 
   tool-serpapi:
-    image: leaptable/engine:latest
+    image: leaptable/engine:v0.0.1
     restart: always
     command: [ "python", "leaptable/tools/serp/main.py" ]
     depends_on:
@@ -155,4 +155,4 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: /leap-data/postgresql
+      device: ~/.leaptable/postgresql
