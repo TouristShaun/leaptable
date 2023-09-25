@@ -83,7 +83,7 @@ services:
       - hasura
 
   init-workspace:
-    image: ubuntu
+    image: leaptable/init:v0.0.1
     command: bash /02-init-workspace.sh
     env_file:
       - .env.local

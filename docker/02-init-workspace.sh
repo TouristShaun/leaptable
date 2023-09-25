@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-apt-get update
-apt-get install curl jq wget -y
-
 curl ident.me
 
 HASURA_GRAPHQL_ADMIN_SECRET=leaptable
