@@ -88,7 +88,7 @@ services:
     env_file:
       - .env.local
     volumes:
-        - ./docker/02-init-workspace.sh:/02-init-workspace.sh
+        - ./02-init-workspace.sh:/02-init-workspace.sh
     depends_on:
       - api
 
