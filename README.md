@@ -19,15 +19,23 @@ GPT, so you can manage data smarter, not harder. Let AI Agents do the work so yo
 
 By far the easiest way to install the LeapTable server is to use docker.
 
-```sql
+```bash
 wget https://git.leaptable.co/docker-compose.yaml \
     https://git.leaptable.co/.env.local \
     https://git.leaptable.co/01-init.sh \
     https://git.leaptable.co/init-meta-db.sql
 
+# Populate .env.local with values accordingly.
+# .env.local
+
 mkdir -p ~/.leaptable/postgresql
 
 docker compose -p leaptable up -d
+```
+
+Shut down the service stack.
+```bash
+docker compose -p leaptable down --volumes
 ```
 
 Discord: https://discord.gg/KkFzHRTF5K
