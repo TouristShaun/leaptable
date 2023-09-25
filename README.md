@@ -20,10 +20,10 @@ GPT, so you can manage data smarter, not harder. Let AI Agents do the work so yo
 By far the easiest way to install the LeapTable server is to use docker.
 
 ```bash
-wget https://git.leaptable.co/docker-compose.yaml \
-    https://git.leaptable.co/.env.local \
-    https://git.leaptable.co/01-init.sh \
-    https://git.leaptable.co/init-meta-db.sql
+wget -O docker-compose.yaml  https://git.leaptable.co/docker-compose.yaml \
+    -O .env.local https://git.leaptable.co/.env.local \
+    -O 01-init.sh https://git.leaptable.co/01-init.sh \
+    -O init-meta-db.sql https://git.leaptable.co/init-meta-db.sql
 
 # Populate .env.local with values accordingly.
 # .env.local
@@ -38,13 +38,15 @@ Shut down the service stack.
 docker compose -p leaptable down --volumes
 ```
 
-Discord: https://discord.gg/KkFzHRTF5K
-
 Slack: https://leaptable.slack.com
 
-### Install reframe client
+### Install docker compose stack client
 ```shell
 pip install leaptable
+```
+
+```shell
+curl -fsSL https://git.leaptable.co/dc-install.sh | sh
 ```
 
 ## LeapTable strives to be
@@ -67,4 +69,4 @@ pip install leaptable
 
 ## Documentation
 
-More documentation is available here: [https://leaptable.co/docs](https://to.leaptable.is/f0Ms)
+More documentation is available here: [https://leaptable.co/docs](https://to.leaptable.co/docs)
