@@ -2,22 +2,35 @@
 set -e
 
 apt-get update
-apt-get install curl -y
+apt-get install curl jq wget -y
 
 curl ident.me
 
-curl --location 'http://api:8000/api/v1/namespace/' \
+HASURA_GRAPHQL_ADMIN_SECRET=leaptable
+
+printf "\nCreating default namespace\n"
+SKEY=`curl --location 'http://api:8000/api/v1/namespace/' \
 --header 'Content-Type: application/json' \
 --data '{
     "slug": "leap_space",
     "name": "Leap Space"
+}' | jq -r .data.api_key`
+
+printf "\nCreating default user\n"
+
+curl --location 'http://api:8000/api/v1/user/' \
+--header "X-API-KEY: ${SKEY}" \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "leaptable",
+    "email": "user@leaptable.co"
 }'
 
 # Create the Leaptable Meta Connection
-echo "Creating Hasura connection 'Leaptable | Meta'"
+printf "\nCreating Hasura connection 'Leaptable | Meta'"
 
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
   "type": "pg_add_source",
@@ -44,7 +57,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 }'
 
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -58,7 +71,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 }'
 
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -73,7 +86,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -88,7 +101,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -103,7 +116,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -118,7 +131,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -133,7 +146,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -148,7 +161,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_track_table",
@@ -163,7 +176,22 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
+--header 'Content-Type: application/json' \
+--data '{
+    "type" : "pg_track_table",
+    "args" : {
+        "source": "Leaptable | Meta",
+        "table": {
+            "name": "api_key",
+            "schema": "public"
+        }
+    }
+}'
+
+echo
+curl --location 'http://hasura:8080/v1/metadata' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_create_object_relationship",
@@ -179,7 +207,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_create_object_relationship",
@@ -195,7 +223,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_create_object_relationship",
@@ -214,7 +242,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_create_object_relationship",
@@ -230,7 +258,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 
 echo
 curl --location 'http://hasura:8080/v1/metadata' \
---header 'x-hasura-admin-secret: leaptable' \
+--header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
 --header 'Content-Type: application/json' \
 --data '{
     "type" : "pg_create_array_relationship",
@@ -246,3 +274,14 @@ curl --location 'http://hasura:8080/v1/metadata' \
         }
     }
 }'
+
+wget -O "Sample | Techstars Companies.xlsx" https://git.leaptable.co/sample-dataset.xslx
+
+# Upload the sample file.
+SAMPLE_FILE="Sample | Techstars Companies.xlsx"
+SAMPLE_FILE_TYPE="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+curl --location 'http://api:8000/api/v1/dataframe/upload/' \
+  -X POST \
+  -F "file=@$SAMPLE_FILE;type=$SAMPLE_FILE_TYPE" \
+  --header "X-API-KEY: ${SKEY}" \
+  --header "Content-Type: multipart/form-data"

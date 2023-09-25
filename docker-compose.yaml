@@ -1,13 +1,10 @@
-# This file extends the base Docker Compose files to make manual testing easy.
+# This file defined a development docker compose environment.
 #
 # Run the following to get started:
 #
-#     docker compose up -d
+#   docker compose -f docker-compose.dev.yaml -p leaptable up --remove-orphans
 #
-# That will start up services in the background. To take them down, you have to
-# run:
-#
-#     docker compose down
+# That will start up services in the foreground. Press CTRL+C to exit.
 #
 # If you changed DB init scripts, then you should also run:
 #
@@ -21,7 +18,7 @@
 #
 # Facts:
 #
-# * The SERVICE PORTS numbering start at 32123, 32122 etc. to avoid other
+# * The SERVICE PORTS numbering start at 45432, 48080, 43000, 43001 etc. to avoid other
 #   existing instances of databases.
 #
 # * The login credentials are, where possible, all "leaptable" to avoid unnecessary
@@ -33,7 +30,7 @@ services:
     image: postgres
     restart: always
     env_file:
-      - .env.local
+      - .env.example
     ports:
       - 45432:5432
     environment:
@@ -57,7 +54,7 @@ services:
     image: hasura/graphql-engine:v2.30.0
     restart: always
     env_file:
-      - .env.local
+      - .env.example
     environment:
       # postgres database to store Hasura metadata
       HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:postgres@postgres:5432/$HASURA_GRAPHQL_DB_NAME
@@ -76,106 +73,83 @@ services:
   api:
       image: leaptable/api:latest
       restart: always
-      command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0"]
+      command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0", "--reload"]
       env_file:
-        - .env.local
+        - .env.example
       ports:
         - 43000:8000
       depends_on:
       - postgres
       - hasura
+      volumes:
+        - ./:/leaptable
 
   init-workspace:
     image: ubuntu
-    command: bash /02-init-workspace.sh
+    command: bash /02-init-workspace.sh & tail -F maana
     env_file:
-      - .env.local
+      - .env.example
     volumes:
         - ./docker/02-init-workspace.sh:/02-init-workspace.sh
     depends_on:
       - api
 
-#  agent-browser:
-#    image: leaptable/engine:latest
-#    restart: always
-#    command: [ "python", "leaptable/agents/browser/main.py" ]
-#    depends_on:
-#      init-db:
-#        condition: service_completed_successfully
-#    environment:
-#      REDIS_STREAM_HOST: "redis"
-#      REDIS_CACHE_HOST: "redis"
-#    env_file:
-#      - .env.local
+  app:
+    image: leaptable/app:latest
+    restart: always
+    depends_on:
+      - postgres
+      - hasura
+    env_file:
+      - .env.example
+    ports:
+      - 43001:3000
 
-#  studio:
-#    image: leaptable/studio:latest
-#    restart: always
-#    depends_on:
-#      - postgres
-#      - hasura
-#    env_file:
-#      - .env.local
-#    ports:
-#      - 43001:3000
-#
-#  agent-browser:
-#    image: leaptable/engine:latest
-#    restart: always
-#    command: [ "python", "leaptable/agents/browser/main.py" ]
-#    depends_on:
-#      - redis
-#      - postgres
-#    environment:
-#      REDIS_STREAM_HOST: "redis"
-#      REDIS_CACHE_HOST: "redis"
-#    env_file:
-#      - .env.local
-#
-#  agent-serpapi:
-#    image: leaptable/engine:latest
-#    restart: always
-#    command: [ "python", "leaptable/agents/serp/main.py" ]
-#    depends_on:
-#      - redis
-#      - postgres
-#    environment:
-#      REDIS_STREAM_HOST: "redis"
-#      REDIS_CACHE_HOST: "redis"
-#    env_file:
-#      - .env.local
-#
-#  tool-browser:
-#    image: leaptable/engine:latest
-#    restart: always
-#    command: [ "python", "leaptable/tools/browser/main.py" ]
-#    depends_on:
-#      - redis
-#      - postgres
-#    environment:
-#      REDIS_STREAM_HOST: "redis"
-#      REDIS_CACHE_HOST: "redis"
-#    env_file:
-#      - .env.local
-#    deploy:
-#      mode: replicated
-#      replicas: 3
-#
-#  tool-serpapi:
-#    image: leaptable/engine:latest
-#    restart: always
-#    command: [ "python", "leaptable/tools/serp/main.py" ]
-#    depends_on:
-#      - redis
-#      - postgres
-#    environment:
-#      REDIS_STREAM_HOST: "redis"
-#      REDIS_CACHE_HOST: "redis"
-#    env_file:
-#      - .env.local
-#    deploy:
-#      mode: replicated
-#      replicas: 3
+  agent-browser:
+    image: leaptable/engine:latest
+    restart: always
+    command: [ "python", "leaptable/agents/browser/main.py" ]
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env.example
+
+  agent-serpapi:
+    image: leaptable/engine:latest
+    restart: always
+    command: [ "python", "leaptable/agents/serp/main.py" ]
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env.example
+
+  tool-browser:
+    image: leaptable/engine:latest
+    restart: always
+    command: [ "python", "leaptable/tools/browser/main.py" ]
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env.example
+    deploy:
+      mode: replicated
+      replicas: 3
+
+  tool-serpapi:
+    image: leaptable/engine:latest
+    restart: always
+    command: [ "python", "leaptable/tools/serp/main.py" ]
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env.example
+    deploy:
+      mode: replicated
+      replicas: 3
 
 volumes:
   leap-data-postgresql:
