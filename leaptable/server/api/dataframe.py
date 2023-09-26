@@ -54,9 +54,9 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
             await out_file.write(content)  # async write chunk
         logger.info(f"File saved to {saved_file_path}")
 
-    # Upload to S3
-    s3_client = boto3.client('s3')
     try:
+        # Upload to S3
+        s3_client = boto3.client('s3')
         bucket_name = S3_BUCKET
 
         # TODO (PETER):
@@ -66,6 +66,9 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
 
         s3_client.upload_file(saved_file_path, bucket_name, s3_key )
         logger.info(f"File uploaded to s3://{bucket_name}/{s3_key}")
+    except ValueError as val_err:
+        logger.error(val_err)
+        logger.info("Ensure your AWS variables are set")
     except ClientError as e:
         logger.error(e)
     except BotoNoCredentialsError as no_creds:
