@@ -68,10 +68,13 @@ curl -fsSL https://git.leaptable.co/dc-install.sh | sh
 * 🗃️ File storage and summarization with GPT-3.5 
 * 🔌 Extensibility with Plugins
 
-## Documentation
+Running on a VM.
 
 ```shell
-ssh -i ~/.ssh/key-pem -N -f -L 48080:localhost:48080 user@x.x.x.x
+ssh -i ~/.ssh/key.pem -N -f -L 48080:localhost:48080 \
+    -L 43001:localhost:43001 -L 43000:localhost:430000 \
+    user@x.x.x.x
 ```
 
+## Documentation
 More documentation is available here: [https://leaptable.co/docs](https://to.leaptable.co/docs)
