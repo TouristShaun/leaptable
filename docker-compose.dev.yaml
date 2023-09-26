@@ -76,11 +76,19 @@ services:
       command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0", "--reload"]
       env_file:
         - .env.dev
+      healthcheck:
+        test: curl --fail http://api:8000/api/v1/system/health/ || exit 1
+        interval: 10s
+        retries: 10
+        start_period: 10s
+        timeout: 10s
       ports:
         - 43000:8000
       depends_on:
-      - postgres
-      - hasura
+        postgres:
+          condition: service_healthy
+        hasura:
+          condition: service_healthy
       volumes:
         - ./:/leaptable
 
@@ -92,7 +100,8 @@ services:
     volumes:
         - ./docker/02-init-workspace.sh:/02-init-workspace.sh
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
   app:
     image: leaptable/app:latest

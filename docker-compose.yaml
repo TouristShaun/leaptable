@@ -66,7 +66,8 @@ services:
       # Unauthorized roles
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - 48080:8080
 
@@ -78,9 +79,17 @@ services:
         - .env.local
       ports:
         - 43000:8000
+      healthcheck:
+        test: curl --fail http://api:8000/api/v1/system/health/ || exit 1
+        interval: 10s
+        retries: 10
+        start_period: 10s
+        timeout: 10s
       depends_on:
-      - postgres
-      - hasura
+        postgres:
+          condition: service_healthy
+        hasura:
+          condition: service_healthy
 
   init-workspace:
     image: leaptable/init:v0.0.1
@@ -90,7 +99,8 @@ services:
     volumes:
         - ./02-init-workspace.sh:/02-init-workspace.sh
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
   app:
     image: leaptable/app:v0.0.1
