@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED True
 RUN --mount=type=cache,target=/var/cache/apt \
     apt update \
     && apt install --yes binutils build-essential \
-      pkg-config ca-certificates libssl-dev libpq-dev clang lld git vim \
+      pkg-config ca-certificates libssl-dev libpq-dev clang lld git vim curl \
     && rm -rf /var/lib/{apt,dpkg,cache,log}
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install poetry
