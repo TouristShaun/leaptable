@@ -20,7 +20,7 @@ from loguru import logger
 from pydantic import BaseModel
 from dataclasses import dataclass
 
-load_dotenv('.env.local')
+load_dotenv('.env')
 logger.info("Loaded .env file")
 
 def pyformat2psql(query: str, named_args: Dict[str, Any]) -> Tuple[str, List[Any]]:

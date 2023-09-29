@@ -17,7 +17,7 @@ from leaptable.server.lib import tenant
 from leaptable.server.routers import router
 from leaptable.server.lib.db_session import database_instance
 
-load_dotenv('.env.local')
+load_dotenv('.env')
 logger.info("Loaded .env file")
 
 app = FastAPI(

@@ -19,7 +19,7 @@ from uuid6 import uuid7
 from leaptable.server.lib import sql_text, hasura
 from leaptable.server.lib.api_key import generate_api_key
 from leaptable.server.lib.db_connection import Database
-from leaptable.server.lib.db_models.namespace import Namespace
+from leaptable.server.lib.db_models.namespace import Namespace, NamespaceMembership
 
 # Global Variables
 router = APIRouter()
@@ -27,6 +27,21 @@ router = APIRouter()
 class Serial(dict):
     def __getitem__(self, key):
         return f"${list(self.keys()).index(key) + 1}"
+
+@router.post("/namespace/membership", name="Create Namespace Membership", description="Create a Namespace Membership")
+async def create_namespace(request: Request, namespace_membership: NamespaceMembership):
+    """Agents endpoint"""
+
+    print(namespace_membership)
+
+    db_ns_membership = await request.app.state.meta_db.execute(
+        """ 
+        INSERT INTO namespace_membership (namespace_id, user_id)
+        VALUES (%(namespace_id)s, %(user_id)s)
+        RETURNING _id, namespace_id, user_id
+        """, namespace_membership.dict())
+
+    return {"success": True, "data": db_ns_membership}
 
 @router.post("/namespace/", name="Create Namespace", description="Create Workspace or Namespace")
 async def create_namespace(request: Request, namespace: Namespace):
@@ -73,8 +88,11 @@ async def create_namespace(request: Request, namespace: Namespace):
             "CREATE DATABASE {db_name}".format(db_name=data_db_name)
         )
 
+        db_user = 'leaptable'
+        db_user = 'postgres'
+
         await request.app.state.meta_db.execute(
-            "GRANT ALL PRIVILEGES ON DATABASE {db_name} TO leaptable".format(db_name=data_db_name)
+            "GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {db_user}".format(db_name=data_db_name, db_user=db_user)
         )
         logger.info(f"Created Data database {data_db_name} for workspace {namespace.slug}")
 
@@ -86,7 +104,7 @@ async def create_namespace(request: Request, namespace: Namespace):
         )
 
         await request.app.state.meta_db.execute(
-            "GRANT ALL PRIVILEGES ON DATABASE {db_name} TO leaptable".format(db_name=trace_db_name)
+            "GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {db_user}".format(db_name=trace_db_name, db_user=db_user)
         )
         logger.info(f"Created Trace database {trace_db_name} for workspace {namespace.slug}")
 

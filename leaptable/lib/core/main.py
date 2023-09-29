@@ -47,7 +47,7 @@ jinja_env = jinja2.Environment()
 
 class SingleActionChatAgent(RedisStreamProcessor):
     def __init__(self, name, invoke_commands, chat_template, tool_list=[], tool_graph={}, *args, **kwargs):
-        load_dotenv('.env.local')
+        load_dotenv('.env')
         self.name = name
         self.invoke_commands = invoke_commands
         self.tool_graph = tool_graph
