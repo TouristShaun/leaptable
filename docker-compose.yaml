@@ -2,7 +2,7 @@
 #
 # Run the following to get started:
 #
-#   docker compose -f docker-compose.dev.yaml -p leaptable up --remove-orphans
+#   docker compose -f docker-compose.dev.yaml -p reframe up --remove-orphans
 #
 # That will start up services in the foreground. Press CTRL+C to exit.
 #
@@ -21,7 +21,7 @@
 # * The SERVICE PORTS numbering start at 45432, 48080, 43000, 43001 etc. to avoid other
 #   existing instances of databases.
 #
-# * The login credentials are, where possible, all "leaptable" to avoid unnecessary
+# * The login credentials are, where possible, all "reframe" to avoid unnecessary
 #   mental overhead.
 
 version: "3.6"
@@ -72,9 +72,9 @@ services:
       - 48080:8080
 
   api:
-      image: leaptable/api:v0.0.1
+      image: reframe/api:v0.0.1
       restart: always
-      command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0"]
+      command: [ "uvicorn", "reframe.server.main:app", "--host", "0.0.0.0"]
       env_file:
         - .env.local
       ports:
@@ -92,7 +92,7 @@ services:
           condition: service_healthy
 
   init-workspace:
-    image: leaptable/init:v0.0.1
+    image: reframe/init:v0.0.1
     command: bash /02-init-workspace.sh
     env_file:
       - .env.local
@@ -103,7 +103,7 @@ services:
         condition: service_healthy
 
   app:
-    image: leaptable/app:v0.0.1
+    image: reframe/app:v0.0.1
     restart: always
     depends_on:
       - postgres
@@ -114,9 +114,9 @@ services:
       - 43001:3000
 
   agent-browser:
-    image: leaptable/engine:v0.0.1
+    image: reframe/engine:v0.0.1
     restart: always
-    command: [ "python", "leaptable/agents/browser/main.py" ]
+    command: [ "python", "reframe/agents/browser/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -124,9 +124,9 @@ services:
       - .env.local
 
   agent-serpapi:
-    image: leaptable/engine:v0.0.1
+    image: reframe/engine:v0.0.1
     restart: always
-    command: [ "python", "leaptable/agents/serp/main.py" ]
+    command: [ "python", "reframe/agents/serp/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -134,9 +134,9 @@ services:
       - .env.local
 
   tool-browser:
-    image: leaptable/engine:v0.0.1
+    image: reframe/engine:v0.0.1
     restart: always
-    command: [ "python", "leaptable/tools/browser/main.py" ]
+    command: [ "python", "reframe/tools/browser/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -147,9 +147,9 @@ services:
       replicas: 3
 
   tool-serpapi:
-    image: leaptable/engine:v0.0.1
+    image: reframe/engine:v0.0.1
     restart: always
-    command: [ "python", "leaptable/tools/serp/main.py" ]
+    command: [ "python", "reframe/tools/serp/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -165,4 +165,4 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: ~/.leaptable/postgresql
+      device: ~/.reframe/postgresql

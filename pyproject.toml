@@ -1,15 +1,15 @@
 [tool.poetry]
-name = "leaptable"
+name = "reframe"
 version = "0.0.1"
 description = "Create, run and manage your intelligent LLM agents on dataframes."
-authors = ["LeapTable Team <pypi@leaptable.us>"]
+authors = ["ReframeAI Team <pypi@reframe.is>"]
 packages = [
-    { include = "leaptable" }
+    { include = "reframe" }
 ]
 readme = "README.md"
-homepage = "https://leaptable.us/docs/"
-repository = "https://github.com/peterwnjenga/leaptable"
-keywords = ["leaptable", "agents", "dataframes", "client"]
+homepage = "https://reframe.us/docs/"
+repository = "https://github.com/peterwnjenga/reframe"
+keywords = ["ReframeAI", "agents", "dataframes", "client"]
 
 
 [tool.poetry.dependencies]
@@ -72,6 +72,7 @@ pydantic-settings = "^2.0.3"
 werkzeug = "^2.3.7"
 python-multipart = "^0.0.6"
 psycopg2-binary = "^2.9.7"
+psycopg-binary = "^3.1.12"
 
 [tool.poetry.dev-dependencies]
 coverage = "^6.3.3"

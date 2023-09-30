@@ -2,7 +2,7 @@
 #
 # Run the following to get started:
 #
-#   docker compose -f docker-compose.dev.yaml -p leaptable up --remove-orphans
+#   docker compose -f docker-compose.dev.yaml -p reframe up --remove-orphans
 #
 # That will start up services in the foreground. Press CTRL+C to exit.
 #
@@ -21,7 +21,7 @@
 # * The SERVICE PORTS numbering start at 45432, 48080, 43000, 43001 etc. to avoid other
 #   existing instances of databases.
 #
-# * The login credentials are, where possible, all "leaptable" to avoid unnecessary
+# * The login credentials are, where possible, all "reframe" to avoid unnecessary
 #   mental overhead.
 
 version: "3.6"
@@ -42,7 +42,7 @@ services:
       interval: 10s
       retries: 10
     volumes:
-      - leap-data-postgresql:/var/lib/postgresql/data
+      - reframe-data-postgresql:/var/lib/postgresql/data
       - ./docker/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh
       - ./docker/init-meta-db.sql:/scripts/init-meta-db.sql
 
@@ -66,34 +66,35 @@ services:
       # Unauthorized roles
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - 48080:8080
 
   api:
-      image: leaptable/api:latest
-      restart: always
-      command: [ "uvicorn", "leaptable.server.main:app", "--host", "0.0.0.0", "--reload"]
-      env_file:
-        - .env.dev
-      healthcheck:
-        test: curl --fail http://api:8000/api/v1/system/health/ || exit 1
-        interval: 10s
-        retries: 10
-        start_period: 10s
-        timeout: 10s
-      ports:
-        - 43000:8000
-      depends_on:
-        postgres:
-          condition: service_healthy
-        hasura:
-          condition: service_healthy
-      volumes:
-        - ./:/leaptable
+    image: reframeai/api:latest
+    restart: always
+    command: [ "uvicorn", "reframe.server.main:app", "--host", "0.0.0.0", "--reload"]
+    env_file:
+      - .env.dev
+    healthcheck:
+      test: curl --fail http://api:8000/api/v1/system/health/ || exit 1
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 10s
+    ports:
+      - 43000:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hasura:
+        condition: service_healthy
+    volumes:
+      - ./:/reframe
 
   init-workspace:
-    image: leaptable/init
+    image: reframeai/init
     command: bash /02-init-workspace.sh & tail -F maana
     env_file:
       - .env.dev
@@ -104,7 +105,7 @@ services:
         condition: service_healthy
 
   app:
-    image: leaptable/app:latest
+    image: reframeai/app:latest
     restart: always
     depends_on:
       - postgres
@@ -115,9 +116,9 @@ services:
       - 43001:3000
 
   agent-browser:
-    image: leaptable/engine:latest
+    image: reframeai/engine:latest
     restart: always
-    command: [ "python", "leaptable/agents/browser/main.py" ]
+    command: [ "python", "reframe/agents/browser/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -125,9 +126,9 @@ services:
       - .env.dev
 
   agent-serpapi:
-    image: leaptable/engine:latest
+    image: reframeai/engine:latest
     restart: always
-    command: [ "python", "leaptable/agents/serp/main.py" ]
+    command: [ "python", "reframe/agents/serp/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -135,9 +136,9 @@ services:
       - .env.dev
 
   tool-browser:
-    image: leaptable/engine:latest
+    image: reframeai/engine:latest
     restart: always
-    command: [ "python", "leaptable/tools/browser/main.py" ]
+    command: [ "python", "reframe/tools/browser/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -148,9 +149,9 @@ services:
       replicas: 3
 
   tool-serpapi:
-    image: leaptable/engine:latest
+    image: reframeai/engine:latest
     restart: always
-    command: [ "python", "leaptable/tools/serp/main.py" ]
+    command: [ "python", "reframe/tools/serp/main.py" ]
     depends_on:
       - redis
       - postgres
@@ -161,9 +162,9 @@ services:
       replicas: 3
 
 volumes:
-  leap-data-postgresql:
+  reframe-data-postgresql:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: /leap-data/postgresql
+      device: /reframe-data/postgresql

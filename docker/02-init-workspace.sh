@@ -3,7 +3,7 @@ set -e
 
 curl ident.me
 
-HASURA_GRAPHQL_ADMIN_SECRET=leaptable
+HASURA_GRAPHQL_ADMIN_SECRET=reframe
 
 printf "\nCreating default namespace\n"
 SKEY=`curl --location 'http://api:8000/api/v1/namespace/' \
@@ -19,12 +19,12 @@ curl --location 'http://api:8000/api/v1/user/' \
 --header "X-API-KEY: ${SKEY}" \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "name": "leaptable",
-    "email": "user@leaptable.co"
+    "name": "reframe",
+    "email": "user@reframe.co"
 }'
 
-# Create the Leaptable Meta Connection
-printf "\nCreating Hasura connection 'Leaptable | Meta'"
+# Create the Reframe Meta Connection
+printf "\nCreating Hasura connection 'Reframe | Meta'"
 
 curl --location 'http://hasura:8080/v1/metadata' \
 --header "x-hasura-admin-secret: ${HASURA_GRAPHQL_ADMIN_SECRET}" \
@@ -32,11 +32,11 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
   "type": "pg_add_source",
   "args": {
-    "name": "Leaptable | Meta",
+    "name": "Reframe | Meta",
     "configuration": {
       "connection_info": {
         "database_url": {
-           "from_env": "HASURA_GRAPHQL_LEAPTABLE_METADB_URL"
+           "from_env": "HASURA_GRAPHQL_REFRAME_METADB_URL"
          },
         "pool_settings": {
           "max_connections": 50,
@@ -59,7 +59,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "namespace",
             "schema": "public"
@@ -73,7 +73,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "user",
             "schema": "public"
@@ -88,7 +88,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "namespace_membership",
             "schema": "public"
@@ -103,7 +103,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "dataframe",
             "schema": "public"
@@ -118,7 +118,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "blueprint",
             "schema": "public"
@@ -133,7 +133,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "app_state",
             "schema": "public"
@@ -148,7 +148,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "history",
             "schema": "public"
@@ -163,7 +163,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "invite",
             "schema": "public"
@@ -178,7 +178,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
 --data '{
     "type" : "pg_track_table",
     "args" : {
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "table": {
             "name": "api_key",
             "schema": "public"
@@ -195,7 +195,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
     "args": {
         "table": "namespace_membership",
         "name": "namespace",
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "using": {
             "foreign_key_constraint_on" : ["namespace_id"]
         }
@@ -211,7 +211,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
     "args": {
         "table": "namespace_membership",
         "name": "user",
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "using": {
             "foreign_key_constraint_on" : ["user_id"]
         }
@@ -227,7 +227,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
     "args": {
         "table": "user",
         "name": "namespace_membership",
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "using": {
             "foreign_key_constraint_on" : {
                 "table" : "namespace_membership",
@@ -246,7 +246,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
     "args": {
         "table": "dataframe",
         "name": "namespace",
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "using": {
             "foreign_key_constraint_on" : ["namespace_id"]
         }
@@ -262,7 +262,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
     "args": {
         "table": "dataframe",
         "name": "blueprint_list",
-        "source": "Leaptable | Meta",
+        "source": "Reframe | Meta",
         "using": {
             "foreign_key_constraint_on" : {
                 "table" : "blueprint",
@@ -272,7 +272,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
     }
 }'
 
-wget -O "Sample | Techstars Companies.xlsx" https://git.leaptable.co/sample-dataset.xslx
+wget -O "Sample | Techstars Companies.xlsx" https://git.reframe.co/sample-dataset.xslx
 
 # Upload the sample file.
 SAMPLE_FILE="Sample | Techstars Companies.xlsx"

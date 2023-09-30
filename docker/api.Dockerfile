@@ -14,13 +14,13 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install poetry
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
 
-ENV APP_HOME /leaptable
+ENV APP_HOME /reframe
 
-RUN git clone https://github.com/peterwnjenga/leaptable.git --depth 1
+RUN git clone https://github.com/peterwnjenga/reframe.git --depth 1
 
 WORKDIR $APP_HOME
 
 RUN poetry install --no-dev
 
 # Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD uvicorn leaptable.server.main:app
+CMD uvicorn reframe.server.main:app
