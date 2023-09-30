@@ -18,7 +18,7 @@ GPT, so you can manage data smarter, not harder. Let AI Agents do the work so yo
 ## Installation
 
 ```shell
-curl -fsSL https://git.reframe.co/dc-install.sh | sh
+curl -fsSL https://git.reframe.is/dc-install.sh | sh
 ```
 
 By far the easiest way to install the ReframeAI server is to use docker.
@@ -77,4 +77,4 @@ ssh -i ~/.ssh/key.pem -N -f -L 48080:localhost:48080 \
 ```
 
 ## Documentation
-More documentation is available here: [https://reframe.co/docs](https://to.reframe.co/docs)
+More documentation is available here: [https://reframe.is/docs](https://to.reframe.is/docs)

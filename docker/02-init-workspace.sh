@@ -272,7 +272,7 @@ curl --location 'http://hasura:8080/v1/metadata' \
     }
 }'
 
-wget -O "Sample | Techstars Companies.xlsx" https://git.reframe.co/sample-dataset.xslx
+wget -O "Sample | Techstars Companies.xlsx" https://git.reframe.is/sample-dataset.xslx
 
 # Upload the sample file.
 SAMPLE_FILE="Sample | Techstars Companies.xlsx"
