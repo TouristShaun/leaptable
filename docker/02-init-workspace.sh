@@ -9,8 +9,8 @@ printf "\nCreating default namespace\n"
 SKEY=`curl --location 'http://api:8000/api/v1/namespace/' \
 --header 'Content-Type: application/json' \
 --data '{
-    "slug": "leap_space",
-    "name": "Leap Space"
+    "slug": "default",
+    "name": "Default"
 }' | jq -r .data.api_key`
 
 printf "\nCreating default user\n"
@@ -20,7 +20,7 @@ curl --location 'http://api:8000/api/v1/user/' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "name": "reframe",
-    "email": "user@reframe.co"
+    "email": "user@reframe.is"
 }'
 
 # Create the Reframe Meta Connection
