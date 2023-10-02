@@ -6,6 +6,7 @@ __copyright__ = "Copyright © 2023 ReframeAI, Inc."
 # Standard Libraries
 import json
 import hashlib
+from os import environ as os_env
 from os import environ as env
 from datetime import datetime, timezone
 
@@ -20,10 +21,16 @@ from pprint import pformat
 CACHE_EXPIRATION_DURATION = 60 * 60 * 24 * 90 # 90 days
 openai.api_key = env.get('OPENAI_API_KEY')
 
-REDIS_CACHE_HOST=env.get('REDIS_CACHE_HOST', "localhost")
-REDIS_PASSWORD=env.get('REDIS_PASSWORD')
+REDIS_STREAM_HOST=os_env.get('REDIS_STREAM_HOST', "localhost")
+REDIS_CACHE_HOST=os_env.get('REDIS_CACHE_HOST', "localhost")
+REDIS_PASSWORD=os_env.get('REDIS_PASSWORD')
+REDIS_USER=os_env.get('REDIS_USER')
+
+red_stream = redis.StrictRedis(
+    REDIS_STREAM_HOST, 6379, charset="utf-8", username=REDIS_USER,
+    password=REDIS_PASSWORD, decode_responses=True)
 red_cache = redis.StrictRedis(
-    REDIS_CACHE_HOST, 6379, charset="utf-8",
+    REDIS_CACHE_HOST, 6379, charset="utf-8", username=REDIS_USER,
     password=REDIS_PASSWORD, decode_responses=True)
 
 def with_cache(prefix, *args, **kwargs):

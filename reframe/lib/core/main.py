@@ -10,14 +10,11 @@ import json
 from pprint import pprint, pformat
 
 # External Libraries
-import psycopg
 import redis
-from os import environ as env
 import tiktoken
 import jinja2
 from dotenv import load_dotenv
 from loguru import logger
-from psycopg import sql
 import openai
 
 # Internal Libraries
@@ -36,6 +33,7 @@ REDIS_STREAM_HOST=os_env.get('REDIS_STREAM_HOST', "localhost")
 REDIS_CACHE_HOST=os_env.get('REDIS_CACHE_HOST', "localhost")
 REDIS_PASSWORD=os_env.get('REDIS_PASSWORD')
 REDIS_USER=os_env.get('REDIS_USER')
+
 red_stream = redis.StrictRedis(
     REDIS_STREAM_HOST, 6379, charset="utf-8", username=REDIS_USER,
     password=REDIS_PASSWORD, decode_responses=True)
@@ -365,6 +363,7 @@ class SingleActionChatAgent(RedisStreamProcessor):
             while True:
                 self.new_event_loop.run_until_complete(self.wait_func())
         except redis.exceptions.ConnectionError as redis_connection_error:
+            # logger.exception(redis_connection_error)
             logger.critical(
                 f"Redis connection error: {redis_connection_error}. Is Redis running and variable 'REDIS_STREAM_HOST' set?")
         except Exception as e:

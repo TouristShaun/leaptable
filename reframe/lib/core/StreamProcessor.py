@@ -22,6 +22,7 @@ red_stream = redis.StrictRedis(
 # ------------------------------
 
 # Class for processing redis streams.
+#
 # Keeps track of the last processed message id via a redis set.
 # Create an abstract class that defines the interface for tools and agents that process streams.
 # The class is not meant to be instantiated directly. It is meant to be inherited by other classes.
@@ -35,10 +36,13 @@ class RedisStreamProcessor:
         super().__init__(*args, **kwargs)  # forwards all unused arguments
 
         self.instream_key = f"reframe::instream::{instream_key }"
+        self.groupname = f"{self.instream_key}::group"
         self.last_processed_stream_key = f"{self.instream_key}::processed_pointer"
         self.last_processed_message_id = red_stream.get(self.last_processed_stream_key)
-        logger.debug(f"Instream key: {self.instream_key}")
+        logger.debug(f"Instream key:: {self.instream_key}")
         logger.debug(f"Last processed message id: {self.last_processed_message_id}")
+
+        self.create_group(self.instream_key, self.groupname)
 
     # Return the last processed redis message id or "0-0" if none is found.
     def get_last_processed_message_id(self):
@@ -65,9 +69,15 @@ class RedisStreamProcessor:
         else:
             # Somehow we got an older message id. This should never happen.
             # Screaming and dying is the only reasonable response.
-            logger.critical(f"Got an older message to process. Old: {last_processed_message_id}, New: {message_id}")
+            logger.critical(f"Got an older message to process. Old: {last_processed_message_id}, New: {message_id}. Exiting")
             exit(3)
 
         red_stream.set(self.last_processed_stream_key, last_processed_message_id)
 
         return last_processed_message_id
+
+    def create_group(self, stream_key: str, groupname: str) -> None:
+        try:
+            red_stream.xgroup_create(name=stream_key, groupname=groupname, id=0, mkstream=self.instream_key)
+        except redis.ResponseError as e:
+            logger.warning(f"raised: {e}")

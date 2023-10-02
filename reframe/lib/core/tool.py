@@ -10,6 +10,7 @@ from os import environ as os_env
 import hashlib
 from abc import ABCMeta, abstractmethod
 import json
+import platform
 from datetime import datetime, timezone
 from pprint import pprint, pformat
 
@@ -61,9 +62,9 @@ class AsyncTool(RedisStreamProcessor):
     # This function is called in an infinite loop by the run function.
     async def _inner(self, *args, **kwargs):
         last_processed_message_id = self.get_last_processed_message_id()
-        l = red_stream.xread(count=3, streams={self.instream_key: last_processed_message_id}, block=1000)
+        items = red_stream.xread(count=3, streams={self.instream_key: last_processed_message_id}, block=1000)
 
-        for _k in l:
+        for _k in items:
             stream_key, stream_messages = _k
             for _j in stream_messages:
                 message_id, message_data = _j
@@ -165,6 +166,10 @@ class Tool(RedisStreamProcessor):
         self.invoke_commands = invoke_commands
         self.read_cache = read_cache
         self.write_cache = write_cache
+        self._last_processed_message_id = '0-0'
+        self.stream_start_id = '0-0'
+        self.check_backlog = True
+
 
         super().__init__(instream_key=f"tool->{self.tool_name}")
 
@@ -175,10 +180,17 @@ class Tool(RedisStreamProcessor):
     # Receive messages from the stream and execute the async_exec function.
     # This function is called in an infinite loop by the run function.
     async def _inner(self, *args, **kwargs):
-        last_processed_message_id = self.get_last_processed_message_id()
-        l = red_stream.xread(count=3, streams={self.instream_key: last_processed_message_id}, block=1000)
+        items = red_stream.xreadgroup(self.groupname, consumername=platform.node(), count=3,
+                                      streams={self.instream_key: self.stream_start_id}, block=500)
 
-        for _k in l:
+        if len(items) == 0:
+            return None
+
+        self.stream_start_id = '>'
+
+        # self.check_backlog = False if len(items[0][1]) == 0 else True
+
+        for _k in items:
             stream_key, stream_messages = _k
             for _j in stream_messages:
                 message_id, message_data = _j
@@ -254,7 +266,9 @@ class Tool(RedisStreamProcessor):
                     'payload': json.dumps(result_dict, default=str),
                     'correlation_id': correlation_id,
                 })
-                self.set_last_processed_message_id(message_id)
+                # self.set_last_processed_message_id(message_id)
+                self._last_processed_message_id = message_id
+                red_stream.xack(stream_key, self.groupname, message_id)
                 logger.info(f"Finished running tool::{self.tool_name}. Set last processed message id to {message_id}. Wrote result to stream {res_stream_key}")
 
         return None
