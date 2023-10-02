@@ -15,8 +15,9 @@ from loguru import logger
 # Global Variables
 REDIS_STREAM_HOST=os_env.get('REDIS_STREAM_HOST', "localhost")
 REDIS_PASSWORD=os_env.get('REDIS_PASSWORD')
+REDIS_USER=os_env.get('REDIS_USER')
 red_stream = redis.StrictRedis(
-    REDIS_STREAM_HOST, 6379, charset="utf-8",
+    REDIS_STREAM_HOST, 6379, charset="utf-8", username=REDIS_USER,
     password=REDIS_PASSWORD, decode_responses=True)
 # ------------------------------
 

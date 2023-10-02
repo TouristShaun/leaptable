@@ -29,6 +29,7 @@ services:
   postgres:
     image: postgres
     restart: always
+    tty: true
     env_file:
       - .env.dev
     ports:
@@ -47,12 +48,30 @@ services:
       - ./docker/init-meta-db.sql:/scripts/init-meta-db.sql
 
   redis:
-    image: redis
+    image: redis/redis-stack:latest
     restart: always
+    tty: true
+#    command: [ "redis-server", "--appendonly", "yes", "--requirepas", "${REDIS_PASSWORD}" ]
+    env_file:
+      - .env.dev
+    environment:
+      REDIS_ARGS: "--requirepass reframe --user reframe-user on >reframe ~* allcommands --user default off nopass nocommands"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping"]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    ports:
+      - "48001:8001"
+      - "46379:6379"
+    volumes:
+      - reframe-data-redis:/data
+
 
   hasura:
     image: hasura/graphql-engine:v2.30.0
     restart: always
+    tty: true
     env_file:
       - .env.dev
     environment:
@@ -74,6 +93,7 @@ services:
   api:
     image: reframeai/api:latest
     restart: always
+    tty: true
     command: [ "uvicorn", "reframe.server.main:app", "--host", "0.0.0.0", "--reload"]
     env_file:
       - .env.dev
@@ -90,11 +110,14 @@ services:
         condition: service_healthy
       hasura:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./:/reframe
 
   init-workspace:
     image: reframeai/init
+    tty: true
     command: bash /02-init-workspace.sh & tail -F maana
     env_file:
       - .env.dev
@@ -107,9 +130,10 @@ services:
   app:
     image: reframeai/app:latest
     restart: always
+    tty: true
     depends_on:
-      - postgres
-      - hasura
+      api:
+        condition: service_healthy
     env_file:
       - .env.dev
     ports:
@@ -118,48 +142,60 @@ services:
   agent-browser:
     image: reframeai/engine:latest
     restart: always
-    command: [ "python", "reframe/agents/browser/main.py" ]
+    tty: true
+    command: [ "nodemon", "--exec", "python3", "reframe/agents/browser/main.py" ]
     depends_on:
-      - redis
-      - postgres
+      api:
+        condition: service_healthy
     env_file:
       - .env.dev
+    volumes:
+      - ./:/reframe
 
   agent-serpapi:
     image: reframeai/engine:latest
     restart: always
-    command: [ "python", "reframe/agents/serp/main.py" ]
+    tty: true
+    command: [ "nodemon", "--exec", "python3", "reframe/agents/serp/main.py" ]
     depends_on:
-      - redis
-      - postgres
+      api:
+        condition: service_healthy
     env_file:
       - .env.dev
+    volumes:
+      - ./:/reframe
 
   tool-browser:
     image: reframeai/engine:latest
     restart: always
-    command: [ "python", "reframe/tools/browser/main.py" ]
+    tty: true
+    command: ["nodemon", "--exec", "python3", "reframe/tools/browser/main.py" ]
     depends_on:
-      - redis
-      - postgres
+      api:
+        condition: service_healthy
     env_file:
       - .env.dev
     deploy:
       mode: replicated
       replicas: 3
+    volumes:
+      - ./:/reframe
 
   tool-serpapi:
     image: reframeai/engine:latest
     restart: always
-    command: [ "python", "reframe/tools/serp/main.py" ]
+    tty: true
+    command: ["nodemon", "--exec", "python3", "reframe/tools/serp/main.py" ]
     depends_on:
-      - redis
-      - postgres
+      api:
+        condition: service_healthy
     env_file:
       - .env.dev
     deploy:
       mode: replicated
       replicas: 3
+    volumes:
+      - ./:/reframe
 
 volumes:
   reframe-data-postgresql:
@@ -168,3 +204,9 @@ volumes:
       o: bind
       type: none
       device: /reframe-data/postgresql
+  reframe-data-redis:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /reframe-data/redis

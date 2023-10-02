@@ -32,9 +32,8 @@ class SerpTool(Tool):
         result = search.get_dict()
         # result = result['organic_results']
         from pprint import pprint
-        pprint(result)
+        # pprint(result)
 
-        llm_result = {}
         if 'answer_box' in result:
             return result['answer_box']
         else:

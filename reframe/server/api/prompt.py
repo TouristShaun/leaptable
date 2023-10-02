@@ -31,6 +31,15 @@ router = APIRouter()
 async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Depends(get_api_key)], prompt: Prompt):
     """Upload dataframe endpoint"""
     print(prompt)
+    db_dataframe = await request.app.state.meta_db.fetch_one(
+        "SELECT * FROM dataframe WHERE _id = (%(_id)s)", {'_id': prompt.dataframe_id}
+    )
+    if db_dataframe is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST ,
+            detail=f"Dataframe ID {prompt.dataframe_id} not found."
+        ) from None
+    dataframe = Dataframe(**db_dataframe)
 
     try:
         limit = int(prompt.limit)
@@ -77,11 +86,6 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
         raise HTTPException
 
     logger.info(f"Input column name: '{prompt.input_column}' → output column '{prompt.output_column_slug}'. Prompt: '{prompt.prompt_text}'")
-
-    db_dataframe = await request.app.state.meta_db.fetch_one(
-        "SELECT * FROM dataframe WHERE _id = (%(_id)s)", {'_id': prompt.dataframe_id}
-    )
-    dataframe = Dataframe(**db_dataframe)
 
     # Add new output columns to the database
     await namespace.data_db.execute(
@@ -179,4 +183,4 @@ async def dataframe_upload(request: Request, namespace: Annotated[Namespace, Dep
     res = hasura.reload_table_metadata(connection_name=namespace.hasura_params['data_db'], table_name=dataframe.table_name)
 
 
-    return {"status": "success", "message": "Dataframe uploaded successfully"}
+    return {"status": "success", "message": "Initiated Prompt run", '_id' : prompt.id_}

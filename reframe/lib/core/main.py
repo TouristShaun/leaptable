@@ -5,7 +5,7 @@ __copyright__ = "Copyright © 2023 ReframeAI, Inc."
 
 # Standard Libraries
 import asyncio
-import os
+from os import environ as os_env
 import json
 from pprint import pprint, pformat
 
@@ -32,17 +32,20 @@ from reframe.server.lib.db_models.namespace import PROCESSING_STATUS, Namespace
 CACHE_EXPIRATION_DURATION = 60 * 60 * 24 * 90 # 90 days
 TASK_EXPIRATION_DURATION = 60 * 60 * 24 * 2 # 48 Hours
 
-REDIS_STREAM_HOST=os.environ.get('REDIS_STREAM_HOST', "localhost")
-REDIS_CACHE_HOST=os.environ.get('REDIS_CACHE_HOST', "localhost")
-REDIS_PASSWORD=os.environ.get('REDIS_PASSWORD')
+REDIS_STREAM_HOST=os_env.get('REDIS_STREAM_HOST', "localhost")
+REDIS_CACHE_HOST=os_env.get('REDIS_CACHE_HOST', "localhost")
+REDIS_PASSWORD=os_env.get('REDIS_PASSWORD')
+REDIS_USER=os_env.get('REDIS_USER')
 red_stream = redis.StrictRedis(
-    REDIS_STREAM_HOST, 6379, charset="utf-8",
+    REDIS_STREAM_HOST, 6379, charset="utf-8", username=REDIS_USER,
     password=REDIS_PASSWORD, decode_responses=True)
 red_cache = redis.StrictRedis(
-    REDIS_STREAM_HOST, 6379, charset="utf-8",
+    REDIS_CACHE_HOST, 6379, charset="utf-8", username=REDIS_USER,
     password=REDIS_PASSWORD, decode_responses=True)
-openai.api_key = os.environ['OPENAI_API_KEY']
+
+openai.api_key = os_env.get('OPENAI_API_KEY')
 jinja_env = jinja2.Environment()
+
 # ------------------------------
 
 class SingleActionChatAgent(RedisStreamProcessor):

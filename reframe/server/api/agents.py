@@ -4,6 +4,7 @@ __authors__ = ["Peter W. Njenga"]
 __copyright__ = "Copyright © 2023 ReframeAI, Inc."
 
 # Standard Libraries
+from os import environ as os_env
 import json
 from pprint import pprint, pformat
 from time import time
@@ -13,6 +14,7 @@ from psycopg import sql
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated, Optional
 from loguru import logger
+import redis
 
 from reframe.server.lib.db_connection import Database
 from reframe.server.lib.db_models.namespace import Namespace, Job, PROCESSING_STATUS
@@ -20,13 +22,12 @@ from reframe.server.lib.security import get_api_key
 from reframe.server.lib.db_models.agent import Agent
 
 router = APIRouter()
-from os import environ as os_env
-import os
-import redis
-REDIS_STREAM_HOST=os.environ.get('REDIS_STREAM_HOST', "localhost")
-REDIS_PASSWORD=os.environ.get('REDIS_PASSWORD')
+
+REDIS_STREAM_HOST=os_env.get('REDIS_STREAM_HOST', "localhost")
+REDIS_PASSWORD=os_env.get('REDIS_PASSWORD')
+REDIS_USER=os_env.get('REDIS_USER')
 red_stream = redis.StrictRedis(
-    REDIS_STREAM_HOST, 6379, charset="utf-8",
+    REDIS_STREAM_HOST, 6379, charset="utf-8", username=REDIS_USER,
     password=REDIS_PASSWORD, decode_responses=True)
 
 from fastapi import Request
